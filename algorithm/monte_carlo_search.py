@@ -5,9 +5,11 @@ Created by Haitao Yue at 2020/10/25
 """
 import time
 import random
+import decorator
 
 
-def MCS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
+@decorator.logPrint
+def MCS(facilityCount, customorCount, capacity, openCost, assignCost, demand, times=10000):
     """
     蒙特卡洛搜索
     :param facilityCount:
@@ -16,6 +18,7 @@ def MCS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
     :param openCost:
     :param assignCost:
     :param demand:
+    :param times:
     :return:
     """
 
@@ -52,11 +55,10 @@ def MCS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
         return total_openCost + total_assignCost, factory_open, customer_assign
 
     start_time = time.time()
-    bestValue = 1000000
+    bestValue = 2 ** 31 - 1
     bestFactoryOpen = []
     bestValueAssign = []
-    time_start = time.time()
-    for i in range(10000):
+    for i in range(times):
 
         tmp = produce_randan_solution()
 
@@ -64,8 +66,6 @@ def MCS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
             bestValue = tmp[0]
             bestFactoryOpen = tmp[1]
             bestValueAssign = tmp[2]
-    time_end = time.time()
-
 
     end_time = time.time()
     result = {
@@ -77,6 +77,7 @@ def MCS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
             "openCost": openCost,
             "assignCost": assignCost,
             "demand": demand,
+            "times": times
         },
         "output": {
             "objVal": bestValue,

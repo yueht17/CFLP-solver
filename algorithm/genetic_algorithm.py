@@ -7,8 +7,10 @@ import math
 import random
 import time
 import pickle
+import decorator
 
 
+@decorator.logPrint
 def GA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
        generation=80, population_size=400, inheritanceProp=0.5, k_tournament=10, reproduceProp=0.5, changeProp=0.1):
     """
@@ -304,7 +306,15 @@ def GA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
         "output": {
             "objVal": value,
             "isOpen": isOpen,
-            "assignment": argmin
+            "assignment": argmin,
+            'population': population_size,
+            'genaration': generation,
+            'k_tournament': k_tournament,
+            'changeProp': changeProp,
+            'inheritanceProp': inheritanceProp,
+            'reproduceProp': reproduceProp,
+            'x-axis': [i for i in range(len(record))],
+            'y-axis': record
         },
         "excutTime": end_time - start_time
     }

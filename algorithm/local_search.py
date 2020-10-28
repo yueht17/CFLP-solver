@@ -5,9 +5,11 @@ Created by Haitao Yue at 2020/10/25
 """
 import time
 import random
+import decorator
 
 
-def LS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
+@decorator.logPrint
+def LS(facilityCount, customorCount, capacity, openCost, assignCost, demand, times=100000):
     """
     先用贪心的策略生成一个可行解然后局部搜索
     :param facilityCount:
@@ -16,6 +18,7 @@ def LS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
     :param openCost:
     :param assignCost:
     :param demand:
+    :param times:
     :return:
     """
 
@@ -86,7 +89,6 @@ def LS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
                 else:
                     pass
 
-
         return total_open_cost + total_assign_cost, open_flag, customer_assign
 
     def produce_local_search_solution(bestFactoryOpen, bestValueAssign, capacity_copy):
@@ -152,7 +154,7 @@ def LS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
 
     # 因为进行贪心算法之后 全局数据发送了污染 所以要重新读取数据
 
-    for x in range(100000):
+    for x in range(times):
         # 生成局部新解
         tmp1 = produce_local_search_solution(bestFactoryOpen, bestValueAssign, capacity_copy)
 
@@ -174,6 +176,7 @@ def LS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
             "openCost": openCost,
             "assignCost": assignCost,
             "demand": demand,
+            "times": times
         },
         "output": {
             "objVal": bestCost,

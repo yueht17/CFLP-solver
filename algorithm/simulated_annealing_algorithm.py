@@ -7,8 +7,10 @@ import math
 import random
 import time
 import pickle
+import decorator
 
 
+@decorator.logPrint
 def SA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
        init_temperature=100, factor=0.999, stop_temperature=10):
     """
@@ -196,11 +198,16 @@ def SA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
             "openCost": openCost,
             "assignCost": assignCost,
             "demand": demand,
+            "init_temperature": init_temperature,
+            "factor": factor,
+            "stop_temperature": stop_temperature
         },
         "output": {
             "objVal": value,
             "isOpen": isOpen,
-            "assignment": argmin
+            "assignment": argmin,
+            'x-axis': [i for i in range(len(record))],
+            'y-axis': record,
         },
         "excutTime": end_time - start_time
     }

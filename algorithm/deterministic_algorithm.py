@@ -6,8 +6,10 @@ Created by Haitao Yue at 2020/10/25
 
 import time
 from gurobipy import *
+import decorator
 
 
+@decorator.logPrint
 def deterministic(facilityCount, customorCount, capacity, openCost, assignCost, demand):
     """
     调用Gurobi工具箱对此MIP问题进行确定性的算法
