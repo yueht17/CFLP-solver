@@ -10,7 +10,7 @@ import pickle
 
 
 def SA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
-       init_temperature=10000, factor=0.999, stop_temperature=1, changeProp=0.1):
+       init_temperature=100, factor=0.999, stop_temperature=10):
     """
     模拟退火实现
     :param facilityCount:int
@@ -22,7 +22,6 @@ def SA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
     :param init_temperature:int
     :param factor:float
     :param stop_temperature:int
-    :param changeProp:float
     :return:
     """
 
@@ -38,7 +37,7 @@ def SA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
         try:
             random.shuffle(order)
         except RecursionError as e:
-            print(order)
+            # print(order)
             raise (e)
         for customor in order:
             bestSuit = facilityCount
@@ -133,8 +132,8 @@ def SA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
 
         return assign
 
+    start_time = time.time()
     T = init_temperature
-
     assign = assignInit()
     argmin = assign
     value = cost(argmin)
@@ -155,7 +154,7 @@ def SA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
         record.append(value)
 
     def recordResult(record):
-        print('正在写入数据')
+        # print('正在写入数据')
         fileName = '.drawData'
         result = None
         with open(fileName, 'r+b') as f:
@@ -167,17 +166,42 @@ def SA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
             f.seek(0, 0)
             f.truncate()
             pickle.dump(result, f)
-        print('写入完成')
+        # print('写入完成')
 
-    recordResult({
-        'type': 'SA',
-        'date': time.time(),
-        'changeProp': changeProp,
-        'init_temperature': init_temperature,
-        'factor': factor,
-        'stop_temperature': stop_temperature,
-        'x-axis': [i for i in range(len(record))],
-        'y-axis': record,
-    })
+    # recordResult({
+    #     'type': 'SA',
+    #     'date': time.time(),
+    #     'changeProp': changeProp,
+    #     'init_temperature': init_temperature,
+    #     'factor': factor,
+    #     'stop_temperature': stop_temperature,
+    #     'x-axis': [i for i in range(len(record))],
+    #     'y-axis': record,
+    # })
 
-    return argmin
+    """
+    写数据
+    """
+    end_time = time.time()
+    isOpen = [0] * facilityCount
+    for i in range(customorCount):
+        isOpen[argmin[i]] = 1
+
+    result = {
+        "algorithm": "simulated_annealing",
+        "input": {
+            "facilityCount": facilityCount,
+            "customorCount": customorCount,
+            "capacity": capacity,
+            "openCost": openCost,
+            "assignCost": assignCost,
+            "demand": demand,
+        },
+        "output": {
+            "objVal": value,
+            "isOpen": isOpen,
+            "assignment": argmin
+        },
+        "excutTime": end_time - start_time
+    }
+    return result

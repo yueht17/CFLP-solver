@@ -4,6 +4,7 @@
 Created by Haitao Yue at 2020/10/25
 """
 
+import time
 from gurobipy import *
 
 
@@ -18,6 +19,7 @@ def deterministic(facilityCount, customorCount, capacity, openCost, assignCost, 
     :param demand:[int]
     :return:None
     """
+    start_time = time.time()
 
     # 确保输入参数的维度正确性
     assert facilityCount == capacity.__len__()
@@ -29,6 +31,7 @@ def deterministic(facilityCount, customorCount, capacity, openCost, assignCost, 
 
     # Model
     m = Model("facility")
+    m.Params.LogToConsole = False
 
     # Plant open decision variables: open[p] == 1 if plant p is open.
     open = m.addVars(plants,
@@ -40,23 +43,6 @@ def deterministic(facilityCount, customorCount, capacity, openCost, assignCost, 
     # optimal quantity to transport to warehouse w from plant p
     transport = m.addVars(warehouses, plants, obj=assignCost, name="trans")
 
-    # You could use Python looping constructs and m.addVar() to create
-    # these decision variables instead.  The following would be equivalent
-    # to the preceding two statements...
-    #
-    # open = []
-    # for p in plants:
-    #  open.append(m.addVar(vtype=GRB.BINARY,
-    #                       obj=openCost[p],
-    #                       name="open[%d]" % p))
-    #
-    # transport = []
-    # for w in warehouses:
-    #  transport.append([])
-    #  for p in plants:
-    #    transport[w].append(m.addVar(obj=assignCost[w][p],
-    #                                 name="trans[%d,%d]" % (w, p)))
-
     # The objective is to minimize the total fixed and variable costs
     m.modelSense = GRB.MINIMIZE
 
@@ -66,12 +52,6 @@ def deterministic(facilityCount, customorCount, capacity, openCost, assignCost, 
     m.addConstrs(
         (transport.sum('*', p) <= capacity[p] * open[p] for p in plants),
         "Capacity")
-
-    # Using Python looping constructs, the preceding would be...
-    #
-    # for p in plants:
-    #  m.addConstr(sum(transport[w][p] for w in warehouses) <= capacity[p] * open[p],
-    #              "Capacity[%d]" % p)
 
     # Demand constraints
     m.addConstrs(
@@ -92,16 +72,6 @@ def deterministic(facilityCount, customorCount, capacity, openCost, assignCost, 
     for p in plants:
         open[p].start = 1.0
 
-    # Now close the plant with the highest fixed cost
-    print('Initial guess:')
-    maxFixed = max(openCost)
-    for p in plants:
-        if openCost[p] == maxFixed:
-            open[p].start = 0.0
-            print('Closing plant %s' % p)
-            break
-    print('')
-
     # Use barrier to solve root relaxation
     m.Params.method = 2
 
@@ -109,14 +79,38 @@ def deterministic(facilityCount, customorCount, capacity, openCost, assignCost, 
     m.optimize()
 
     # Print solution
-    print('\nTOTAL COSTS: %g' % m.objVal)
-    print('SOLUTION:')
-    for p in plants:
-        if open[p].x > 0.99:
-            print('Plant %s open' % p)
-            for w in warehouses:
-                if transport[w, p].x > 0:
-                    print('  Transport %g units to warehouse %s' % \
-                          (transport[w, p].x, w))
-        else:
-            print('Plant %s closed!' % p)
+    # print('\nTOTAL COSTS: %g' % m.objVal)
+    # print('SOLUTION:')
+    # for p in plants:
+    #     if open[p].x > 0.99:
+    #         print('Plant %s open' % p)
+    #         for w in warehouses:
+    #             if transport[w, p].x > 0:
+    #                 print('  Transport %g units to warehouse %s' % \
+    #                       (transport[w, p].x, w))
+    #     else:
+    #         print('Plant %s closed!' % p)
+
+    """
+    写数据
+    """
+    end_time = time.time()
+    result = {
+        "algorithm": "deterministic",
+        "input": {
+            "facilityCount": facilityCount,
+            "customorCount": customorCount,
+            "capacity": capacity,
+            "openCost": openCost,
+            "assignCost": assignCost,
+            "demand": demand,
+        },
+        "output": {
+            "objVal": m.objVal,
+            "isOpen": [int(1) if open[_].x > 0.99 else 0 for _ in plants],
+            # "assignment": [[transport[i, j].x for j in range(facilityCount)] for i in range(customorCount)]
+        },
+        "excutTime": end_time - start_time
+    }
+
+    return result

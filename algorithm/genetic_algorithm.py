@@ -10,7 +10,7 @@ import pickle
 
 
 def GA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
-       population_size=400, inheritanceProp=0.5, k_tournament=10, reproduceProp=0.5, changeProp=0.1):
+       generation=80, population_size=400, inheritanceProp=0.5, k_tournament=10, reproduceProp=0.5, changeProp=0.1):
     """
     遗传算法实现
     :param facilityCount:int
@@ -39,7 +39,7 @@ def GA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
         try:
             random.shuffle(order)
         except RecursionError as e:
-            print(order)
+            # print(order)
             raise (e)
         for customor in order:
             bestSuit = facilityCount
@@ -216,7 +216,7 @@ def GA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
             population.pop(loser)
 
     def recordResult(record):
-        print('正在写入数据')
+        # print('正在写入数据')
         fileName = '.drawData'
         result = None
         with open(fileName, 'r+b') as f:
@@ -228,8 +228,9 @@ def GA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
             f.seek(0, 0)
             f.truncate()
             pickle.dump(result, f)
-        print('写入完成')
+        # print('写入完成')
 
+    start_time = time.time()
     record = []
 
     population = \
@@ -239,10 +240,9 @@ def GA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
     argmin = min(population, key=cost)
     value = cost(argmin)
 
-    GENERATION = 80
     reproduceCount = math.ceil(population_size * reproduceProp)
 
-    for _ in range(GENERATION):
+    for _ in range(generation):
         newOffspring = []
         for _ in range(reproduceCount):
             p1, p2 = random.choices(population, k=2)
@@ -270,16 +270,42 @@ def GA(facilityCount, customorCount, capacity, openCost, assignCost, demand,
             value = newValue
             argmin = newAssign
         record.append(value)
-    recordResult({
-        'type': 'GA',
-        'date': time.time(),
-        'population': population_size,
-        'genaration': GENERATION,
-        'k_tournament': k_tournament,
-        'changeProp': changeProp,
-        'inheritanceProp': inheritanceProp,
-        'reproduceProp': reproduceProp,
-        'x-axis': [i for i in range(len(record))],
-        'y-axis': record,
-    })
-    return argmin
+    # recordResult({
+    #     'type': 'GA',
+    #     'date': time.time(),
+    #     'population': population_size,
+    #     'genaration': generation,
+    #     'k_tournament': k_tournament,
+    #     'changeProp': changeProp,
+    #     'inheritanceProp': inheritanceProp,
+    #     'reproduceProp': reproduceProp,
+    #     'x-axis': [i for i in range(len(record))],
+    #     'y-axis': record,
+    # })
+
+    """
+    写数据
+    """
+    end_time = time.time()
+    isOpen = [0] * facilityCount
+    for i in range(customorCount):
+        isOpen[argmin[i]] = 1
+
+    result = {
+        "algorithm": "genetic",
+        "input": {
+            "facilityCount": facilityCount,
+            "customorCount": customorCount,
+            "capacity": capacity,
+            "openCost": openCost,
+            "assignCost": assignCost,
+            "demand": demand,
+        },
+        "output": {
+            "objVal": value,
+            "isOpen": isOpen,
+            "assignment": argmin
+        },
+        "excutTime": end_time - start_time
+    }
+    return result

@@ -20,7 +20,6 @@ def MCS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
     """
 
     def produce_randan_solution():
-
         factory_open = [0] * facilityCount
         customer_assign = []
         total_openCost = 0
@@ -52,6 +51,7 @@ def MCS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
                     flag = False
         return total_openCost + total_assignCost, factory_open, customer_assign
 
+    start_time = time.time()
     bestValue = 1000000
     bestFactoryOpen = []
     bestValueAssign = []
@@ -65,9 +65,24 @@ def MCS(facilityCount, customorCount, capacity, openCost, assignCost, demand):
             bestFactoryOpen = tmp[1]
             bestValueAssign = tmp[2]
     time_end = time.time()
-    # print(time_end - time_start)
-    # print(bestValue)
-    # print(bestFactoryOpen)
-    # print(bestValueAssign)
 
-    return bestValue, bestFactoryOpen, bestValueAssign
+
+    end_time = time.time()
+    result = {
+        "algorithm": "monte_carlo",
+        "input": {
+            "facilityCount": facilityCount,
+            "customorCount": customorCount,
+            "capacity": capacity,
+            "openCost": openCost,
+            "assignCost": assignCost,
+            "demand": demand,
+        },
+        "output": {
+            "objVal": bestValue,
+            "isOpen": bestFactoryOpen,
+            "assignment": bestValueAssign
+        },
+        "excutTime": end_time - start_time
+    }
+    return result
